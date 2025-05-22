@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linhas De SP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background-color: #474747;
+   
+    }
+    input {
+      width: 300px;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #000000;
+      border-radius: 5px;
+ 
+    }
+    h1{
+      color: #fff9f9;
+    }
+    .resultado {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #ffffff;
+    }
+    .linha {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      color: white;
+      margin: 0.25rem;
+    }
+    .sugestoes {
+      margin-top: 1rem;
+      border: 2px solid #000000;
+      width: 300px;
+      background-color: rgb(255, 255, 255);
+      max-height: 200px;
+      overflow-y: auto;
+      position: absolute;
+      z-index: 10;
+      display: none;
+      color: #000000;
+    }
+    .sugestao {
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    .sugestao:hover {
+      background-color: #e0e0e0;
+    }
+
+    .linha-legenda {
+  
+  padding: 100px;
+  border-top: 1px solid #ccc;
+  font-family: sans-serif;
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+}
+
+.cor {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  margin-right: 5px;
+  border-radius: 50%;
+}
+
+/* Cores das linhas */
+.azul { background-color: #0072bc; }
+.verde { background-color: #00ab84; }
+.vermelha { background-color: #ee3124; }
+.amarela { background-color: #ffcc00; }
+.lilas { background-color: #9b59b6; }
+.diamante { background-color: #795548; }
+.coral { background-color: #ff6666; }
+
+  </style>
+</head>
+<body>
+
+  <h1>Linhas Metropolitano de São Paulo</h1>
+  <input type="text" id="estacaoInput" placeholder="Digite o nome da estação..." oninput="buscarEstacao()" autocomplete="off">
+  <div class="sugestoes" id="sugestoes"></div>
+  <div class="resultado" id="resultado"></div>
+
+  <footer class="linha-legenda">
+  <div class="linha">
+    <span class="cor azul"></span> Linha 1 - Azul (Metrô)
+  </div>
+  <div class="linha">
+    <span class="cor verde"></span> Linha 2 - Verde (Metrô)
+  </div>
+  <div class="linha">
+    <span class="cor vermelha"></span> Linha 3 - Vermelha (Metrô)
+  </div>
+  <div class="linha">
+    <span class="cor amarela"></span> Linha 4 - Amarela (ViaQuatro)
+  </div>
+  <div class="linha">
+    <span class="cor lilas"></span> Linha 5 - Lilás (ViaMobilidade)
+  </div>
+  <div class="linha">
+    <span class="cor diamante"></span> Linha 8 - Diamante (ViaMobilidade)
+  </div>
+  <div class="linha">
+    <span class="cor coral"></span> Linha 11 - Coral (CPTM)
+  </div>
+</footer>
+
+
+  <script>
+    const estacoes = {
+
+      // Baldeações Tranferencia de Linhas
+      "Sé": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" },
+        { linha: 3, nome: "Vermelha", cor: "#FF0000" }
+      ],
+      "Vila Prudente": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+        { linha: 15, nome: "Prata", cor: "#C0C0C0", baldeacao: true }
+      ],
+      "Brás": [
+        { linha: 3, nome: "Vermelha", cor: "#FF0000" },
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" },
+        { linha: 11, nome: "Coral", cor: "#FF7F50" },
+        { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+
+      ],
+
+      "Luz": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+        { linha: 11, nome: "Coral", cor: "#FF7F50" },
+        { linha: 1, nome: "Azul", cor: "#1E90FF" },
+        
+    ],
+
+    "Barra Funda": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+        { linha: 3, nome: "Vermelha", cor: "#FF0000" },
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" }
+        
+    ],
+      "Tamanduateí": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+      ],
+   
+      "Paulista": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+        { linha: 2, nome: "Verde", cor: "#32CD32", baldeacao: true }
+      ],
+      "Consolação": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+        { linha: 4, nome: "Amarela", cor: "#FFD700"},
+      ],
+      "República": [
+        { linha: 3, nome: "Vermelha", cor: "#FF0000" },
+        { linha: 4, nome: "Amarela", cor: "#FFD700" }
+      ],
+        "Tatuapé": [
+        { linha: 3, nome: "Vermelha", cor: "#FF0000" },
+        { linha: 11, nome: "Coral", cor: "#FF7F50" },
+        { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+       "Corinthians-Itaquera": [
+        { linha: 3, nome: "Vermelha", cor: "#FF0000" },
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+      ],
+       "Calmon Viana": [
+        { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+      ],
+      
+    
+                 "Chácara Klabin": [
+        { linha: 5, nome: "Lilás", cor: "#800080" },
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+
+      ],
+
+                "Paraíso": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" },
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+
+      ],
+            "Ana Rosa": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" },
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+
+            "Santa Cruz": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" },
+        { linha: 5, nome: "Lilás", cor: "#800080" },
+        
+    ],
+
+    "Santo Amaro": [ 
+      {linha: 5, nome: "Lilás", cor: "#800080" },
+     { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+
+     "Pinheiros": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+        { linha: 9, nome: "Amarela", cor: "#006400" },
+    ],
+      "Presidente Altino ": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" },
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+      "Osasco": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" },
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+  "Engenheiro Goulart": [
+        { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+        { linha: 13, nome: "Coral", cor: "#00CED1" }, 
+      ],
+      
+       // Final Baldeações Tranferencia de Linhas
+
+       // linha 1-Azul 
+      
+      "Tucuruvi": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+
+      ],
+           "Parada Inglesa": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Jardim São Paulo - Ayton Senna": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Santana": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Carandiru": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Portuguesa-Tietê": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Armênia": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Tiradentes": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "São Bento": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Japão Liberdade": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],      "São Joaquim":[
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "Vergueiro": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+             "Vila Mariana": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+             "Praça Da Árvore": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+             "Saúde": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+            "São Judas (Ultra Farma)": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+             "Conceição": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+             "Jabaquara": [
+        { linha: 1, nome: "Azul", cor: "#1E90FF" }
+      ],
+    
+
+      // Linha 2-Verde
+      "Sacomã": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+      "Alto Do Ipiranga": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+      "Santos-Imigrante": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+     "Brigadeiro": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+      "Trianon-Masp": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+     "Clínicas": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+      "Sumaré (Santuário N. Sa. De Fátima)": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+      "Vila Madalena": [
+        { linha: 2, nome: "Verde", cor: "#32CD32" },
+    ],
+
+      // linha 3-Vermelha
+      "Artur Alvin": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ], 
+      "Patriarca - Vila Ré": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Guilhermina-Esperança": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Vila Matilde": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Penha": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Carrão": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      
+      "Bresser-Mooca": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Belém": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Anhangabaú": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Pedro II": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Santa Cecília": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+      "Marechal Deodoro": [ { linha: 3, nome: "Vermelha", cor: "#FF0000" } ],
+  
+    // Linha 4-Amarela 
+    "Higienópolis-Mackenzie": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+    "Paulista (Pernambucanas)": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+    "Oscar Freire": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+     "Fradique Coutinho": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+     "Faria Lima": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+     "Butantã": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+      "São Paulo-Morumbi": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+      "Vila Sônia (Prof Elisabeth Tenreiro)-Taboão Da Serra": [
+        { linha: 4, nome: "Amarela", cor: "#FFD700" },
+    ],
+
+    // Linha 5-Lilas 
+    "Capão Redondo": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Campo Limpo": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Vila das Belezas": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Giovanni Gronchi": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      
+      "Largo Treze": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Adolfo Pinheiro": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Alto da Boa Vista": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Borba Gato": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Brooklin": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Campo Belo": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Eucaliptos": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Moema": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "AACD-Servidor": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      "Hospital São Paulo": [ { linha: 5, nome: "Lilás", cor: "#800080" } ],
+      
+    // Linha 7-Rubi 
+
+    "Judiaí": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Várzea Paulista": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Campo Limpo Paulista": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Batujuro": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Francisco Morato": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Baltazar": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Franco Da Rocha": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Caieiras": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Perus": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+    
+      "Vila Aurora": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+     "Jaraguá": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+     "Vila Clarice": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+    
+      "Pirituba": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Piqueri": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Lapa": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+      "Água Branca": [
+        { linha: 7, nome: "Rubi", cor: "#8B0000" },
+    ],
+    
+
+    // Linha 8-Diamante 
+
+    "Júlio Prestes": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" }
+    ],
+     "Lapa (linha 8)": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" }
+    ],
+     "Domingos De Moraes": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" }
+    ],
+     "Imperatriz Leopoldina": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" }
+
+    ],
+    "Comandante Sampaio": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Quitaúna": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "General Miguel Costa": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Carapicuíba": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Santa Terezinha": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Antonio João": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Barueri": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Jardim Belval": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Jardim Silveira": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Jandira": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Sagrado Coração": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Engenheiro Cardoso": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Itapevi": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Santa Rita": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+     "Amador Bueno": [
+        { linha: 8, nome: "Diamante", cor: "#A9A9A9" } 
+    ],
+
+   
+    // Linha 9-Esmeralda 
+
+    "Luiz Bartoloso (Km 21) ": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Ceasa": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+     "Villa-Lobos-Jaguaré": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+     "Cidade Universitária": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+     "Hebraica-Rebouças": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Cidade Jardim": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Vila Olímpia": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Berrini": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Morumbi": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Granja Julieta": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "João Dias": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Socorro": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Jurubatuba": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Autódromo": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Primavera-Interlagos": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Grajaú": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    "Mendes - Vila Natal - Bruno Covas": [
+        { linha: 9, nome: "Esmeralda", cor: "#006400"},
+    ],
+    
+
+    // Linha 10-Turquesa
+    "Rio Grande Da Serra": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" } 
+    ], 
+     "Ribeirão Pires - Antônio Bespalec": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ], 
+      "Guabituba": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ], 
+      "Mauá": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ], 
+      "Capuava": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ], 
+       "Santo André - Prefeito Celso Daniel": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ],
+      "Prefeito Saladino": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ],
+      "Ultinga": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ],
+      "São Caetano Do Sul - Prefeito Walter Braido": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ],
+      "Ipiranga": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ],
+      "Juventus Mooca": [
+        { linha: 10, nome: "Turquesa", cor: "#40E0D0" }
+    ],
+    
+
+    // Linha 11-Coral
+    "Estudantes" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+    "Mogi Das Cruzes" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+     "Braz Cubas" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "Jundiapeba" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "Suzano" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "Poá" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "Ferraz De Vasconcelos" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "Antonio Gianetti Neto" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "Guainases" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "José Bonifácio" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+      "Dom Bosco" : [
+        { linha: 11, nome: "Coral", cor: "#FF7F50" }, 
+    ],
+
+    // Linha 12-Safira
+    "Aracaré": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+    "Itaquacetuba": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],  
+    "Engenheiro Manuel Feio": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+     "Jardim Romano": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+     "Itaim Paulista": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+     "Jardim Helena - Vila Mara" : [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+     "São Miguel Paulista": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+     "Comendador Ermelino": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+     "USP Leste": [
+    { linha: 12, nome: "Safira", cor: "#1C1C1C" },
+    ],
+      
+    // Linha 13-Jade 
+
+      "Guarulhos-Cecap": [
+        { linha: 13, nome: "Coral", cor: "#00CED1" }, 
+      ],
+       "Aeroporto-Guarulhos": [
+        { linha: 13, nome: "Coral", cor: "#00CED1" }, 
+      ],
+
+
+      // Linha 15-Prata
+
+      "Jardim Colonial": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "São Mateus": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "Fazenda Da Juta": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "Sapopemba": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "Jardim Planalto": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "Vila União": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "Vila Tolstói": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "Camilo Haddad": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "São Lucas": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      "Oratório": [
+        { linha: 15, nome: "Prata", cor: "#C0C0C0" }
+      ],
+      
+    };
+
+    function buscarEstacao() {
+      const input = document.getElementById("estacaoInput").value.trim().toLowerCase();
+      const resultado = document.getElementById("resultado");
+      const sugestoes = document.getElementById("sugestoes");
+
+      if (input === "") {
+        sugestoes.style.display = "none";
+        resultado.innerHTML = "";
+        return;
+      }
+
+      const estacoesFiltradas = Object.keys(estacoes)
+        .filter(nome => nome.toLowerCase().includes(input))
+        .slice(0, 5);
+
+      if (estacoesFiltradas.length > 0) {
+        sugestoes.innerHTML = estacoesFiltradas
+          .map(nome => `<div class="sugestao" onclick="selecionarEstacao('${nome}')">${nome}</div>`)
+          .join('');
+        sugestoes.style.display = "block";
+      } else {
+        sugestoes.style.display = "none";
+      }
+    }
+
+    function selecionarEstacao(nome) {
+      document.getElementById("estacaoInput").value = nome;
+      mostrarResultado(nome);
+      document.getElementById("sugestoes").style.display = "none";
+    }
+
+    function mostrarResultado(nome) {
+      const estacoesEncontradas = estacoes[nome];
+      const resultado = document.getElementById("resultado");
+
+      if (estacoesEncontradas && estacoesEncontradas.length > 0) {
+        resultado.innerHTML = `Estação <strong>${nome}</strong> pertence à(s) linha(s):<br><br>` +
+          estacoesEncontradas.map(estacao => `
+            <span class="linha" style="background-color:${estacao.cor}">
+              Linha ${estacao.linha} - ${estacao.nome}${estacao.baldeacao ? " (Baldeação)" : ""}
+            </span>
+          `).join(' ');
+      } else {
+        resultado.innerHTML = `Estação <strong>${nome}</strong> não encontrada.`;
+      }
+    }
+  </script>
+</body>
+</html>
